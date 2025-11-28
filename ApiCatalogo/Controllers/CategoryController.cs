@@ -16,7 +16,7 @@ public class CategoryController : ControllerBase
 	[HttpGet]
 	public ActionResult<Category[]> GetCategories()
 	{
-		var categories = _context.Categories.ToArray();
+		var categories = _context.Categories.AsNoTracking().ToArray();
 
 		if (categories is null)
 		{
@@ -29,7 +29,7 @@ public class CategoryController : ControllerBase
 	[HttpGet("products")]
 	public ActionResult<Category[]> GetCategoriesWithProducts()
 	{
-		var categories = _context.Categories.Include(prod => prod.Products).ToArray();
+		var categories = _context.Categories.AsNoTracking().Include(prod => prod.Products).ToArray();
 
 		if (categories is null)
 		{
@@ -42,7 +42,7 @@ public class CategoryController : ControllerBase
 	[HttpGet("{id:int}", Name = "GetCategoryById")]
 	public ActionResult<Category> GetCategoryById(int id)
 	{
-		var category = _context.Categories.FirstOrDefault(prod => prod.CategoryId == id);
+		var category = _context.Categories.AsNoTracking().FirstOrDefault(prod => prod.CategoryId == id);
 
 		if (category is null)
 		{
