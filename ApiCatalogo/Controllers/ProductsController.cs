@@ -32,7 +32,7 @@ public class ProductsController : ControllerBase
 		}
 	}
 
-	[HttpGet("{id:int}", Name = "GetProduct")]
+	[HttpGet("{id:int:min(1)}", Name = "GetProduct")]
 	public ActionResult<Product> GetProductById(int id)
 	{
 		try
@@ -72,7 +72,7 @@ public class ProductsController : ControllerBase
 		}
 	}
 
-	[HttpPut("{id:int}")]
+	[HttpPut("{id:int:min(1)}")]
 	public ActionResult UpdateProduct(int id, Product product)
 	{
 		try
@@ -93,7 +93,7 @@ public class ProductsController : ControllerBase
 		}
 	}
 
-	[HttpDelete("{id:int}")]
+	[HttpDelete("{id:int:min(1)}")]
 	public ActionResult DeleteProduct(int id)
 	{
 		try
