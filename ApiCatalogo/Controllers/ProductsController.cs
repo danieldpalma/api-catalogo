@@ -2,6 +2,7 @@
 using ApiCatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace ApiCatalogo.Controllers;
 
@@ -14,11 +15,11 @@ public class ProductsController : ControllerBase
 	public ProductsController(AppDbContext context) => _context = context;
 
 	[HttpGet]
-	public ActionResult<IEnumerable<Product[]>> GetProducts()
+	public async Task<ActionResult<IEnumerable<Product[]>>> GetProductsAsync()
 	{
 		try
 		{
-			var products = _context.Products.AsNoTracking().ToArray();
+			var products = await _context.Products.AsNoTracking().ToArrayAsync();
 			if (products is null)
 			{
 				return NotFound();
@@ -33,11 +34,11 @@ public class ProductsController : ControllerBase
 	}
 
 	[HttpGet("{id:int:min(1)}", Name = "GetProduct")]
-	public ActionResult<Product> GetProductById(int id)
+	public async Task<ActionResult<Product>> GetProductByIdAsync(int id)
 	{
 		try
 		{
-			var product = _context.Products.AsNoTracking().FirstOrDefault(prod => prod.ProductId == id);
+			var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(prod => prod.ProductId == id);
 			if (product is null)
 			{
 				return NotFound();
