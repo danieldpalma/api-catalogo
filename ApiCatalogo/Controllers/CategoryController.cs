@@ -2,6 +2,7 @@
 using ApiCatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace ApiCatalogo.Controllers;
 
@@ -14,11 +15,11 @@ public class CategoryController : ControllerBase
 	public CategoryController(AppDbContext context) => _context = context;
 
 	[HttpGet]
-	public ActionResult<Category[]> GetCategories()
+	public async Task<ActionResult<Category[]>> GetCategoriesAsync()
 	{
 		try
 		{
-			var categories = _context.Categories.AsNoTracking().ToArray();
+			var categories = await _context.Categories.AsNoTracking().ToArrayAsync();
 
 			if (categories is null)
 			{
@@ -34,11 +35,11 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpGet("products")]
-	public ActionResult<Category[]> GetCategoriesWithProducts()
+	public async Task<ActionResult<Category[]>> GetCategoriesWithProductsAsync()
 	{
 		try
 		{
-			var categories = _context.Categories.AsNoTracking().Include(prod => prod.Products).ToArray();
+			var categories = await _context.Categories.AsNoTracking().Include(prod => prod.Products).ToArrayAsync();
 
 			if (categories is null)
 			{
@@ -54,11 +55,11 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpGet("{id:int:min(1)}", Name = "GetCategoryById")]
-	public ActionResult<Category> GetCategoryById(int id)
+	public async Task<ActionResult<Category>> GetCategoryByIdAsync(int id)
 	{
 		try
 		{
-			var category = _context.Categories.AsNoTracking().FirstOrDefault(prod => prod.CategoryId == id);
+			var category = await _context.Categories.AsNoTracking().FirstOrDefaultAsync(prod => prod.CategoryId == id);
 
 			if (category is null)
 			{
