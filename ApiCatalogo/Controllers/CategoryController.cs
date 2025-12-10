@@ -1,4 +1,5 @@
 ﻿using ApiCatalogo.DTOs;
+using ApiCatalogo.DTOs.Mappings;
 using ApiCatalogo.Models;
 using ApiCatalogo.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -25,19 +26,7 @@ public class CategoryController : ControllerBase
 		if (categories is null)
 			return NotFound();
 
-		var categoriesDto = new List<CategoryDTO>();
-
-		foreach (var category in categories)
-		{
-			var categoryDto = new CategoryDTO()
-			{
-				CategoryId = category.CategoryId,
-				Name = category.Name,
-				ImageUrl = category.ImageUrl,
-			};
-
-			categoriesDto.Add(categoryDto);
-		}
+		var categoriesDto = categories.ToCategoryDTOList();
 
 		return Ok(categoriesDto);
 	}
@@ -53,12 +42,7 @@ public class CategoryController : ControllerBase
 			return NotFound();
 		}
 
-		var categoryDTO = new CategoryDTO()
-		{
-			CategoryId = category.CategoryId,
-			Name = category.Name,
-			ImageUrl = category.ImageUrl,
-		};
+		var categoryDTO = category.ToCategoryDTO();
 
 		return Ok(categoryDTO);
 	}
@@ -73,22 +57,12 @@ public class CategoryController : ControllerBase
 			return BadRequest();
 		}
 
-		var category = new Category()
-		{
-			CategoryId = categoryDto.CategoryId,
-			Name = categoryDto.Name,
-			ImageUrl = categoryDto.ImageUrl,
-		};
+		var category = categoryDto.ToCategory();
 
 		var newCateogry = _unitOfWork.CategoryRepository.Create(category);
 		_unitOfWork.Commit();
 
-		var newCategoryDTO = new CategoryDTO()
-		{
-			CategoryId = category.CategoryId,
-			Name = category.Name,
-			ImageUrl = category.ImageUrl,
-		};
+		var newCategoryDTO = newCateogry.ToCategoryDTO();
 
 		return new CreatedAtRouteResult("GetById", new { id = newCategoryDTO.CategoryId }, newCategoryDTO);
 	}
@@ -102,24 +76,14 @@ public class CategoryController : ControllerBase
 			return BadRequest();
 		}
 
-		var category = new Category()
-		{
-			CategoryId = categoryDto.CategoryId,
-			Name = categoryDto.Name,
-			ImageUrl = categoryDto.ImageUrl,
-		};
+		var category = categoryDto.ToCategory();
 
 		_unitOfWork.CategoryRepository.Update(category);
 		_unitOfWork.Commit();
 
-		var newCategoryDTO = new CategoryDTO()
-		{
-			CategoryId = category.CategoryId,
-			Name = category.Name,
-			ImageUrl = category.ImageUrl,
-		};
+		var updatedCategoryDTO = category.ToCategoryDTO();
 
-		return Ok(newCategoryDTO);
+		return Ok(updatedCategoryDTO);
 	}
 
 	[HttpDelete("{id:int:min(1)}")]
