@@ -13,12 +13,20 @@ public class ProductRepository : Repository<Product>, IProductRepository
 		return GetAll().Where(c => c.CategoryId == id);
 	}
 
-	public IEnumerable<Product> GetProducts(ProductsParameters productsParameters)
+	//public IEnumerable<Product> GetProducts(ProductsParameters productsParameters)
+	//{
+	//	return GetAll()
+	//		.OrderBy(p => p.Name)
+	//		.Skip((productsParameters.PageNumber - 1) * productsParameters.PageSize)
+	//		.Take(productsParameters.PageSize)
+	//		.ToList();
+	//}
+
+	public PagedList<Product> GetProducts(ProductsParameters productsParameters)
 	{
-		return GetAll()
-			.OrderBy(p => p.Name)
-			.Skip((productsParameters.PageNumber - 1) * productsParameters.PageSize)
-			.Take(productsParameters.PageSize)
-			.ToList();
+		var products = GetAll().OrderBy(p => p.ProductId).AsQueryable();
+		var orderedProducts = PagedList<Product>.ToPagedList(products, productsParameters.PageNumber, productsParameters.PageSize);
+
+		return orderedProducts;
 	}
 }

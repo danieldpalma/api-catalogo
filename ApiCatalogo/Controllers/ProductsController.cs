@@ -6,6 +6,7 @@ using ApiCatalogo.Repositories;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ApiCatalogo.Controllers;
 
@@ -51,7 +52,7 @@ public class ProductsController : ControllerBase
 	public ActionResult<IEnumerable<ProductDTO[]>> GetProductByCategory(int id)
 	{
 		var products = _unitOfWork.ProductRepository.GetProductByCategory(id);
-		if (products.IsNullOrEmpty()) 
+		if (products.IsNullOrEmpty())
 			return NotFound();
 
 		var productsDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
@@ -63,6 +64,19 @@ public class ProductsController : ControllerBase
 	public ActionResult<IEnumerable<ProductDTO>> GetProductsWithPagination([FromQuery] ProductsParameters productsParameters)
 	{
 		var products = _unitOfWork.ProductRepository.GetProducts(productsParameters);
+
+		var metadata = new
+		{
+			products.TotalCount,
+			products.PageSize,
+			products.CurrentPage,
+			products.TotalPages,
+			products.HasNext,
+			products.HasPrevius,
+		};
+
+		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
 		var productsDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
 
 		return Ok(productsDto);
@@ -71,7 +85,7 @@ public class ProductsController : ControllerBase
 	[HttpPost]
 	public ActionResult<ProductDTO> Post(ProductDTO productDto)
 	{
-		if(productDto is null)
+		if (productDto is null)
 			return BadRequest();
 
 		var product = _mapper.Map<Product>(productDto);
