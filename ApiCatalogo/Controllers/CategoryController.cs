@@ -1,4 +1,5 @@
-﻿using ApiCatalogo.Models;
+﻿using ApiCatalogo.DTOs;
+using ApiCatalogo.Models;
 using ApiCatalogo.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,17 +19,31 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpGet]
-	public ActionResult<Category[]> Get()
+	public ActionResult<CategoryDTO[]> Get()
 	{
 		var categories = _unitOfWork.CategoryRepository.GetAll();
 		if (categories is null)
 			return NotFound();
 
-		return Ok(categories);
+		var categoriesDto = new List<CategoryDTO>();
+
+		foreach (var category in categories)
+		{
+			var categoryDto = new CategoryDTO()
+			{
+				CategoryId = category.CategoryId,
+				Name = category.Name,
+				ImageUrl = category.ImageUrl,
+			};
+
+			categoriesDto.Add(categoryDto);
+		}
+
+		return Ok(categoriesDto);
 	}
 
 	[HttpGet("{id:int:min(1)}", Name = "GetById")]
-	public ActionResult<Category> GetById(int id)
+	public ActionResult<CategoryDTO> GetById(int id)
 	{
 		var category = _unitOfWork.CategoryRepository.Get(c => c.CategoryId == id);
 
@@ -38,38 +53,73 @@ public class CategoryController : ControllerBase
 			return NotFound();
 		}
 
-		return Ok(category);
+		var categoryDTO = new CategoryDTO()
+		{
+			CategoryId = category.CategoryId,
+			Name = category.Name,
+			ImageUrl = category.ImageUrl,
+		};
+
+		return Ok(categoryDTO);
 	}
 
 
 	[HttpPost]
-	public ActionResult<Category> Post(Category category)
+	public ActionResult<CategoryDTO> Post(CategoryDTO categoryDto)
 	{
-		if (category is null)
+		if (categoryDto is null)
 		{
 			_logger.LogWarning($"Invalid category.");
 			return BadRequest();
 		}
+
+		var category = new Category()
+		{
+			CategoryId = categoryDto.CategoryId,
+			Name = categoryDto.Name,
+			ImageUrl = categoryDto.ImageUrl,
+		};
 
 		var newCateogry = _unitOfWork.CategoryRepository.Create(category);
 		_unitOfWork.Commit();
 
-		return new CreatedAtRouteResult("GetById", new { id = newCateogry.CategoryId }, newCateogry);
+		var newCategoryDTO = new CategoryDTO()
+		{
+			CategoryId = category.CategoryId,
+			Name = category.Name,
+			ImageUrl = category.ImageUrl,
+		};
+
+		return new CreatedAtRouteResult("GetById", new { id = newCategoryDTO.CategoryId }, newCategoryDTO);
 	}
 
 	[HttpPut("{id:int:min(1)}")]
-	public ActionResult<Category> Put(int id, Category category)
+	public ActionResult<CategoryDTO> Put(int id, CategoryDTO categoryDto)
 	{
-		if (id != category.CategoryId || category is null)
+		if (id != categoryDto.CategoryId || categoryDto is null)
 		{
 			_logger.LogWarning($"Invalid category.");
 			return BadRequest();
 		}
 
+		var category = new Category()
+		{
+			CategoryId = categoryDto.CategoryId,
+			Name = categoryDto.Name,
+			ImageUrl = categoryDto.ImageUrl,
+		};
+
 		_unitOfWork.CategoryRepository.Update(category);
 		_unitOfWork.Commit();
 
-		return Ok(category);
+		var newCategoryDTO = new CategoryDTO()
+		{
+			CategoryId = category.CategoryId,
+			Name = category.Name,
+			ImageUrl = category.ImageUrl,
+		};
+
+		return Ok(newCategoryDTO);
 	}
 
 	[HttpDelete("{id:int:min(1)}")]
