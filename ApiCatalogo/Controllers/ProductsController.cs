@@ -64,22 +64,17 @@ public class ProductsController : ControllerBase
 	public ActionResult<IEnumerable<ProductDTO>> GetProductsWithPagination([FromQuery] ProductsParameters productsParameters)
 	{
 		var products = _unitOfWork.ProductRepository.GetProducts(productsParameters);
+		return ObtainProducts(products);
+	}
 
-		var metadata = new
-		{
-			products.TotalCount,
-			products.PageSize,
-			products.CurrentPage,
-			products.TotalPages,
-			products.HasNext,
-			products.HasPrevius,
-		};
+	
 
-		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+	[HttpGet("filter/price/pagination")]
+	public ActionResult<IEnumerable<ProductDTO>> GetProductsFilterPrice([FromQuery] ProductsFilterPrice productsFilterParams)
+	{
+		var products = _unitOfWork.ProductRepository.GetProductsFilterPrice(productsFilterParams);
 
-		var productsDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
-
-		return Ok(productsDto);
+		return ObtainProducts(products);
 	}
 
 	[HttpPost]
@@ -151,5 +146,24 @@ public class ProductsController : ControllerBase
 		_unitOfWork.Commit();
 
 		return Ok();
+	}
+
+	private ActionResult<IEnumerable<ProductDTO>> ObtainProducts(PagedList<Product> products)
+	{
+		var metadata = new
+		{
+			products.TotalCount,
+			products.PageSize,
+			products.CurrentPage,
+			products.TotalPages,
+			products.HasNext,
+			products.HasPrevius,
+		};
+
+		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+		var productsDto = _mapper.Map<IEnumerable<ProductDTO>>(products);
+
+		return Ok(productsDto);
 	}
 }
