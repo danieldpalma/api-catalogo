@@ -53,22 +53,16 @@ public class CategoryController : ControllerBase
 	public ActionResult<IEnumerable<ProductDTO>> GetCategoriesWithPagination([FromQuery] CategoriesParameters categoriesParameters)
 	{
 		var categories = _unitOfWork.CategoryRepository.GetCategories(categoriesParameters);
+		return ObtainCategories(categories);
+	}
 
-		var metadata = new
-		{
-			categories.TotalCount,
-			categories.PageSize,
-			categories.CurrentPage,
-			categories.TotalPages,
-			categories.HasNext,
-			categories.HasPrevius,
-		};
+	
 
-		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
-
-		var categoriesDto = categories.ToCategoryDTOList();
-
-		return Ok(categoriesDto);
+	[HttpGet("filter/name/pagination")]
+	public ActionResult<IEnumerable<ProductDTO>> GetCategoriesFilteredName([FromQuery] CategoriesFilterName categoriesFilterName)
+	{
+		var filteredCategories = _unitOfWork.CategoryRepository.GetCategoriesFilterName(categoriesFilterName);
+		return ObtainCategories(filteredCategories);
 	}
 
 
@@ -121,5 +115,24 @@ public class CategoryController : ControllerBase
 		_unitOfWork.Commit();
 
 		return Ok();
+	}
+
+	private ActionResult<IEnumerable<ProductDTO>> ObtainCategories(PagedList<Category> categories)
+	{
+		var metadata = new
+		{
+			categories.TotalCount,
+			categories.PageSize,
+			categories.CurrentPage,
+			categories.TotalPages,
+			categories.HasNext,
+			categories.HasPrevius,
+		};
+
+		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+		var categoriesDto = categories.ToCategoryDTOList();
+
+		return Ok(categoriesDto);
 	}
 }
