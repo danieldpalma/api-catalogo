@@ -1,8 +1,10 @@
 ﻿using ApiCatalogo.DTOs;
 using ApiCatalogo.DTOs.Mappings;
 using ApiCatalogo.Models;
+using ApiCatalogo.Pagination;
 using ApiCatalogo.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ApiCatalogo.Controllers;
 
@@ -45,6 +47,28 @@ public class CategoryController : ControllerBase
 		var categoryDTO = category.ToCategoryDTO();
 
 		return Ok(categoryDTO);
+	}
+
+	[HttpGet("pagination")]
+	public ActionResult<IEnumerable<ProductDTO>> GetCategoriesWithPagination([FromQuery] CategoriesParameters categoriesParameters)
+	{
+		var categories = _unitOfWork.CategoryRepository.GetCategories(categoriesParameters);
+
+		var metadata = new
+		{
+			categories.TotalCount,
+			categories.PageSize,
+			categories.CurrentPage,
+			categories.TotalPages,
+			categories.HasNext,
+			categories.HasPrevius,
+		};
+
+		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+		var categoriesDto = categories.ToCategoryDTOList();
+
+		return Ok(categoriesDto);
 	}
 
 
