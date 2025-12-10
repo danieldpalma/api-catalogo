@@ -8,19 +8,19 @@ namespace ApiCatalogo.Controllers;
 [ApiController]
 public class CategoryController : ControllerBase
 {
-	private readonly IRepository<Category> _repository;
+	private readonly IUnitOfWork _unitOfWork;
 	private readonly ILogger<CategoryController> _logger;
 
-	public CategoryController(IRepository<Category> repository, ILogger<CategoryController> logger)
+	public CategoryController(IUnitOfWork unitOfWork, ILogger<CategoryController> logger)
 	{
-		_repository = repository;
+		_unitOfWork = unitOfWork;
 		_logger = logger;
 	}
 
 	[HttpGet]
 	public ActionResult<Category[]> Get()
 	{
-		var categories = _repository.GetAll();
+		var categories = _unitOfWork.CategoryRepository.GetAll();
 		if (categories is null)
 			return NotFound();
 
@@ -30,7 +30,7 @@ public class CategoryController : ControllerBase
 	[HttpGet("{id:int:min(1)}", Name = "GetById")]
 	public ActionResult<Category> GetById(int id)
 	{
-		var category = _repository.Get(c => c.CategoryId == id);
+		var category = _unitOfWork.CategoryRepository.Get(c => c.CategoryId == id);
 
 		if (category is null)
 		{
@@ -51,7 +51,8 @@ public class CategoryController : ControllerBase
 			return BadRequest();
 		}
 
-		var newCateogry = _repository.Create(category);
+		var newCateogry = _unitOfWork.CategoryRepository.Create(category);
+		_unitOfWork.Commit();
 
 		return new CreatedAtRouteResult("GetById", new { id = newCateogry.CategoryId }, newCateogry);
 	}
@@ -65,7 +66,8 @@ public class CategoryController : ControllerBase
 			return BadRequest();
 		}
 
-		_repository.Update(category);
+		_unitOfWork.CategoryRepository.Update(category);
+		_unitOfWork.Commit();
 
 		return Ok(category);
 	}
@@ -73,11 +75,12 @@ public class CategoryController : ControllerBase
 	[HttpDelete("{id:int:min(1)}")]
 	public ActionResult Delete(int id)
 	{
-		var category = _repository.Get(c => c.CategoryId == id);
+		var category = _unitOfWork.CategoryRepository.Get(c => c.CategoryId == id);
 		if (category is null)
 			return NotFound();
 
-		_repository.Delete(category);
+		_unitOfWork.CategoryRepository.Delete(category);
+		_unitOfWork.Commit();
 
 		return Ok();
 	}
