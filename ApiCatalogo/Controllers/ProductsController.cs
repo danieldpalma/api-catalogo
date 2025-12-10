@@ -3,6 +3,7 @@ using ApiCatalogo.Extensions;
 using ApiCatalogo.Models;
 using ApiCatalogo.Repositories;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiCatalogo.Controllers;
@@ -71,6 +72,31 @@ public class ProductsController : ControllerBase
 		var newProductDto = _mapper.Map<Product>(newProduct);
 
 		return new CreatedAtRouteResult("GetProduct", new { id = newProductDto.ProductId }, newProductDto);
+	}
+
+	[HttpPatch("{id:int:min(1)}/updatePartial")]
+	public ActionResult<ProductDTOUpdateResponse> Patch(int id, JsonPatchDocument<ProductDTOUpdateRequest> patchProductDto)
+	{
+		if (patchProductDto is null || id <= 0)
+			return BadRequest();
+
+		var product = _unitOfWork.ProductRepository.Get(p => p.ProductId == id);
+
+		if (product is null)
+			return NotFound();
+
+		var productUpdateRequest = _mapper.Map<ProductDTOUpdateRequest>(product);
+
+		patchProductDto.ApplyTo(productUpdateRequest, ModelState);
+
+		if (!ModelState.IsValid || !TryValidateModel(productUpdateRequest))
+			return BadRequest(ModelState);
+
+		_mapper.Map(productUpdateRequest, product);
+		_unitOfWork.Commit();
+
+		var productResponse = _mapper.Map<ProductDTOUpdateResponse>(product);
+		return Ok(productResponse);
 	}
 
 	[HttpPut("{id:int:min(1)}")]
