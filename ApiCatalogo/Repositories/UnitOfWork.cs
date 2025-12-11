@@ -27,7 +27,7 @@ public class UnitOfWork : IUnitOfWork
 		set { _categoryRepo = value; }
 	}
 
-	public void Commit() => _context.SaveChanges();
+	public async Task CommitAsync() => await _context.SaveChangesAsync();
 
 	public void Dispose() => _context.Dispose();
 }

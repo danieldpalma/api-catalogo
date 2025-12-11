@@ -5,6 +5,6 @@ namespace ApiCatalogo.Repositories;
 
 public interface ICategoryRepository : IRepository<Category>
 {
-	PagedList<Category> GetCategories(CategoriesParameters categoriesParameters);
-	PagedList<Category> GetCategoriesFilterName(CategoriesFilterName categoriesFilterName);
+	Task<PagedList<Category>> GetCategoriesAsync(CategoriesParameters categoriesParameters);
+	Task<PagedList<Category>> GetCategoriesFilterNameAsync(CategoriesFilterName categoriesFilterName);
 }
