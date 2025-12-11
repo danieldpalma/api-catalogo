@@ -8,9 +8,11 @@ public class ProductRepository : Repository<Product>, IProductRepository
 {
 	public ProductRepository(AppDbContext context) : base(context) { }
 
-	public IEnumerable<Product> GetProductByCategory(int id)
+	public async Task<IEnumerable<Product>> GetProductByCategoryAsync(int id)
 	{
-		return GetAll().Where(c => c.CategoryId == id);
+		var products = await GetAllAsync();
+		var productsCategory = products.Where(c => c.CategoryId == id);
+		return productsCategory;
 	}
 
 	//public IEnumerable<Product> GetProducts(ProductsParameters productsParameters)
@@ -22,17 +24,18 @@ public class ProductRepository : Repository<Product>, IProductRepository
 	//		.ToList();
 	//}
 
-	public PagedList<Product> GetProducts(ProductsParameters productsParameters)
+	public async Task<PagedList<Product>> GetProductsAsync(ProductsParameters productsParameters)
 	{
-		var products = GetAll().OrderBy(p => p.ProductId).AsQueryable();
-		var orderedProducts = PagedList<Product>.ToPagedList(products, productsParameters.PageNumber, productsParameters.PageSize);
+		var products = await GetAllAsync();
+		var orderedProducts = products.OrderBy(p => p.ProductId).AsQueryable();
+		var result = PagedList<Product>.ToPagedList(orderedProducts, productsParameters.PageNumber, productsParameters.PageSize);
 
-		return orderedProducts;
+		return result;
 	}
 
-	public PagedList<Product> GetProductsFilterPrice(ProductsFilterPrice productsFilterParams)
+	public async Task<PagedList<Product>> GetProductsFilterPriceAsync(ProductsFilterPrice productsFilterParams)
 	{
-		var products = GetAll().AsQueryable();
+		var products = await GetAllAsync();
 
 		if (productsFilterParams.Price.HasValue && !string.IsNullOrEmpty(productsFilterParams.PriceCriterion))
 		{
@@ -50,7 +53,7 @@ public class ProductRepository : Repository<Product>, IProductRepository
 			}
 		}
 
-		var filteredProducts = PagedList<Product>.ToPagedList(products, productsFilterParams.PageNumber, productsFilterParams.PageSize);
+		var filteredProducts = PagedList<Product>.ToPagedList(products.AsQueryable(), productsFilterParams.PageNumber, productsFilterParams.PageSize);
 		return filteredProducts;
 	}
 }

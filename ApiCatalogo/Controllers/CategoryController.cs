@@ -5,6 +5,7 @@ using ApiCatalogo.Pagination;
 using ApiCatalogo.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace ApiCatalogo.Controllers;
 
@@ -22,9 +23,9 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpGet]
-	public ActionResult<CategoryDTO[]> Get()
+	public async Task<ActionResult<CategoryDTO[]>> Get()
 	{
-		var categories = _unitOfWork.CategoryRepository.GetAll();
+		var categories = await _unitOfWork.CategoryRepository.GetAllAsync();
 		if (categories is null)
 			return NotFound();
 
@@ -34,9 +35,9 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpGet("{id:int:min(1)}", Name = "GetById")]
-	public ActionResult<CategoryDTO> GetById(int id)
+	public async Task<ActionResult<CategoryDTO>> GetById(int id)
 	{
-		var category = _unitOfWork.CategoryRepository.Get(c => c.CategoryId == id);
+		var category = await _unitOfWork.CategoryRepository.GetAsync(c => c.CategoryId == id);
 
 		if (category is null)
 		{
@@ -50,24 +51,21 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpGet("pagination")]
-	public ActionResult<IEnumerable<ProductDTO>> GetCategoriesWithPagination([FromQuery] CategoriesParameters categoriesParameters)
+	public async Task<ActionResult<IEnumerable<ProductDTO>>> GetCategoriesWithPagination([FromQuery] CategoriesParameters categoriesParameters)
 	{
-		var categories = _unitOfWork.CategoryRepository.GetCategories(categoriesParameters);
+		var categories = await _unitOfWork.CategoryRepository.GetCategoriesAsync(categoriesParameters);
 		return ObtainCategories(categories);
 	}
 
-	
-
 	[HttpGet("filter/name/pagination")]
-	public ActionResult<IEnumerable<ProductDTO>> GetCategoriesFilteredName([FromQuery] CategoriesFilterName categoriesFilterName)
+	public async Task<ActionResult<IEnumerable<ProductDTO>>> GetCategoriesFilteredName([FromQuery] CategoriesFilterName categoriesFilterName)
 	{
-		var filteredCategories = _unitOfWork.CategoryRepository.GetCategoriesFilterName(categoriesFilterName);
+		var filteredCategories = await _unitOfWork.CategoryRepository.GetCategoriesFilterNameAsync(categoriesFilterName);
 		return ObtainCategories(filteredCategories);
 	}
 
-
 	[HttpPost]
-	public ActionResult<CategoryDTO> Post(CategoryDTO categoryDto)
+	public async Task<ActionResult<CategoryDTO>> Post(CategoryDTO categoryDto)
 	{
 		if (categoryDto is null)
 		{
@@ -77,16 +75,16 @@ public class CategoryController : ControllerBase
 
 		var category = categoryDto.ToCategory();
 
-		var newCateogry = _unitOfWork.CategoryRepository.Create(category);
-		_unitOfWork.Commit();
+		var newCateogry = _unitOfWork.CategoryRepository.Create(category!);
+		await _unitOfWork.CommitAsync();
 
 		var newCategoryDTO = newCateogry.ToCategoryDTO();
 
-		return new CreatedAtRouteResult("GetById", new { id = newCategoryDTO.CategoryId }, newCategoryDTO);
+		return new CreatedAtRouteResult("GetById", new { id = newCategoryDTO!.CategoryId }, newCategoryDTO);
 	}
 
 	[HttpPut("{id:int:min(1)}")]
-	public ActionResult<CategoryDTO> Put(int id, CategoryDTO categoryDto)
+	public async Task<ActionResult<CategoryDTO>> Put(int id, CategoryDTO categoryDto)
 	{
 		if (id != categoryDto.CategoryId || categoryDto is null)
 		{
@@ -96,23 +94,23 @@ public class CategoryController : ControllerBase
 
 		var category = categoryDto.ToCategory();
 
-		_unitOfWork.CategoryRepository.Update(category);
-		_unitOfWork.Commit();
+		_unitOfWork.CategoryRepository.Update(category!);
+		await _unitOfWork.CommitAsync();
 
-		var updatedCategoryDTO = category.ToCategoryDTO();
+		var updatedCategoryDTO = category!.ToCategoryDTO();
 
 		return Ok(updatedCategoryDTO);
 	}
 
 	[HttpDelete("{id:int:min(1)}")]
-	public ActionResult Delete(int id)
+	public async Task<ActionResult> Delete(int id)
 	{
-		var category = _unitOfWork.CategoryRepository.Get(c => c.CategoryId == id);
+		var category = await _unitOfWork.CategoryRepository.GetAsync(c => c.CategoryId == id);
 		if (category is null)
 			return NotFound();
 
 		_unitOfWork.CategoryRepository.Delete(category);
-		_unitOfWork.Commit();
+		await _unitOfWork.CommitAsync();
 
 		return Ok();
 	}
