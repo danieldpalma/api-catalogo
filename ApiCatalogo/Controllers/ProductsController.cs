@@ -144,7 +144,7 @@ public class ProductsController : ControllerBase
 		_unitOfWork.ProductRepository.Delete(product);
 		await _unitOfWork.CommitAsync();
 
-		return Ok();
+		return NoContent();
 	}
 
 	private ActionResult<IEnumerable<ProductDTO>> ObtainProducts(IPagedList<Product> products)

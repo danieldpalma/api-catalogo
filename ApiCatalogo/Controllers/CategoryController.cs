@@ -112,7 +112,7 @@ public class CategoryController : ControllerBase
 		_unitOfWork.CategoryRepository.Delete(category);
 		await _unitOfWork.CommitAsync();
 
-		return Ok();
+		return NoContent();
 	}
 
 	private ActionResult<IEnumerable<ProductDTO>> ObtainCategories(IPagedList<Category> categories)
