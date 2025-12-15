@@ -3,9 +3,12 @@ using ApiCatalogo.DTOs.Mappings;
 using ApiCatalogo.Extensions;
 using ApiCatalogo.Filters;
 using ApiCatalogo.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,29 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer();
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 	.AddEntityFrameworkStores<AppDbContext>()
 	.AddDefaultTokenProviders();
+
+var secretKey = builder.Configuration["JWT:SecreKey"] ?? throw new ArgumentException("Invalid secret key!");
+
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+	options.SaveToken = true;
+	options.RequireHttpsMetadata = false;
+	options.TokenValidationParameters = new TokenValidationParameters()
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ClockSkew = TimeSpan.Zero,
+		ValidAudience = builder.Configuration["JWT:ValidAudience"],
+		ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+	};
+});
 
 string mySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
