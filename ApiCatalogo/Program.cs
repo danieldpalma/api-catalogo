@@ -36,7 +36,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 	.AddEntityFrameworkStores<AppDbContext>()
 	.AddDefaultTokenProviders();
 
-var secretKey = builder.Configuration["JWT:SecreKey"] ?? throw new ArgumentException("Invalid secret key!");
+var secretKey = builder.Configuration["JWT:SecretKey"] ?? throw new ArgumentException("Invalid secret key!");
 
 builder.Services.AddAuthentication(options =>
 {
