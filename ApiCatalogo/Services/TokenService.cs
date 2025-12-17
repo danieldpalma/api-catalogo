@@ -23,7 +23,7 @@ public class TokenService : ITokenService
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
 			Subject = new ClaimsIdentity(claims),
-			Expires = DateTime.Now.AddMinutes(_config.GetSection("JWT").GetValue<double>("TokenValidityInMinutes")),
+			Expires = DateTime.UtcNow.AddMinutes(_config.GetSection("JWT").GetValue<double>("TokenValidityInMinutes")),
 			Audience = _config.GetSection("JWT").GetValue<string>("ValidAudience"),
 			Issuer = _config.GetSection("JWT").GetValue<string>("ValidIssuer"),
 			SigningCredentials = signingCredentials
