@@ -105,6 +105,7 @@ public class CategoryController : ControllerBase
 	}
 
 	[HttpDelete("{id:int:min(1)}")]
+	[Authorize(Policy = "AdminOnly")]
 	public async Task<ActionResult> Delete(int id)
 	{
 		var category = await _unitOfWork.CategoryRepository.GetAsync(c => c.CategoryId == id);
