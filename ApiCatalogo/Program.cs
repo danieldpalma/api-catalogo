@@ -85,6 +85,13 @@ builder.Services.AddAuthentication(options =>
 	};
 });
 
+builder.Services.AddAuthorizationBuilder()
+	.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"))
+	.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("SuperAdmin").RequireClaim("id", "daniel"))
+	.AddPolicy("UserOnly", policy => policy.RequireRole("User"))
+	.AddPolicy("ExclusivePolicyOnly", policy => policy.RequireAssertion(context =>
+		context.User.HasClaim(claim => claim.Type == "id" && claim.Value == "daniel") || context.User.IsInRole("SuperAdmin")));
+
 string mySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
